@@ -1,9 +1,9 @@
 {
-  "name": "rollup-starter-lib",
+  "name": "alpine-sse",
   "version": "1.0.0",
-  "main": "dist/how-long-till-lunch.cjs.js",
-  "module": "dist/how-long-till-lunch.esm.js",
-  "browser": "dist/how-long-till-lunch.umd.js",
+  "main": "dist/alpine-sse.js",
+  "module": "dist/alpine-sse.esm.js",
+  "browser": "dist/alpine-sse.umd.js",
   "devDependencies": {
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
