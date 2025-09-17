@@ -1,45 +1,87 @@
-# rollup-starter-lib
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/rollup/rollup-starter-lib.svg)](https://greenkeeper.io/)
+# alpine-sse
 
-This repo contains a bare-bones example of how to create a library using Rollup, including importing a module from `node_modules` and converting it from CommonJS.
+Alpine SSE is a lightweight library for integrating [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) with [Alpine.js](https://alpinejs.dev/). It provides Alpine.js magic helpers and directives for real-time updates, fragment merging, and more, using a simple API.
 
-We're creating a library called `how-long-till-lunch`, which usefully tells us how long we have to wait until lunch, using the [ms](https://github.com/zeit/ms) package:
+## Features
 
-```js
-console.log('it will be lunchtime in ' + howLongTillLunch());
-```
+- Alpine.js magic helper `$sse` for easy SSE requests
+- Alpine directive `x-sse` for declarative SSE integration
+- Supports fragment merging, Alpine data updates, script execution, and more
+- View transitions support (where available)
+- Written in TypeScript
 
-## Getting started
+## Getting Started
 
-Clone this repository and install its dependencies:
+Clone this repository and install dependencies:
 
 ```bash
-git clone https://github.com/rollup/rollup-starter-lib
-cd rollup-starter-lib
+git clone https://github.com/flying-swallow/alpine-sse.git
+cd alpine-sse
 npm install
 ```
 
-`npm run build` builds the library to `dist`, generating three files:
+To build the library:
 
-* `dist/how-long-till-lunch.cjs.js`
-    A CommonJS bundle, suitable for use in Node.js, that `require`s the external dependency. This corresponds to the `"main"` field in package.json
-* `dist/how-long-till-lunch.esm.js`
-    an ES module bundle, suitable for use in other people's libraries and applications, that `import`s the external dependency. This corresponds to the `"module"` field in package.json
-* `dist/how-long-till-lunch.umd.js`
-    a UMD build, suitable for use in any environment (including the browser, as a `<script>` tag), that includes the external dependency. This corresponds to the `"browser"` field in package.json
+```bash
+npm run build
+```
 
-`npm run dev` builds the library, then keeps rebuilding it whenever the source files change using [rollup-watch](https://github.com/rollup/rollup-watch).
+This will generate UMD bundles in `dist/alpine-sse.js` and `dist/alpine-sse.min.js`.
 
-`npm test` builds the library, then tests it.
+To develop with automatic rebuilds:
 
-## Variations
-
-* [babel](https://github.com/rollup/rollup-starter-lib/tree/babel) — illustrates writing the source code in ES2015 and transpiling it for older environments with [Babel](https://babeljs.io/)
-* [buble](https://github.com/rollup/rollup-starter-lib/tree/buble) — similar, but using [Bublé](https://buble.surge.sh/) which is a faster alternative with less configuration
-* [TypeScript](https://github.com/rollup/rollup-starter-lib/tree/typescript) — uses [TypeScript](https://www.typescriptlang.org/) for type-safe code and transpiling
+```bash
+npm run dev
+```
 
 
+```html
+<div x-data="{ url: '/events', data: {} }" x-sse="{ url: url, payload: { foo: 'bar' } }" @sse-merge-alpine-data.window="Object.assign(data, $event.detail)">
+    <!-- Your content here -->
+</div>
+```
+
+See the `src/main.ts` for all available options and event types.
+
+## API
+
+### Magic Helper: `$sse`
+
+```js
+$sse.get(url, options)
+$sse.post(url, options)
+// ...patch, put, delete
+```
+
+### Directive: `x-sse`
+
+```html
+<div x-sse="{ url: '/events', payload: { ... } }"></div>
+```
+
+#### Options
+- `url`: The SSE endpoint
+- `payload`: Data to send (for POST/PUT/PATCH)
+- `headers`: Custom headers
+- `contentType`: 'json' or 'form'
+- `openWhenHidden`: Keep connection open when tab is hidden
+- `retryInterval`, `retryScaler`, `retryMaxWaitMs`, `retryMaxCount`: Retry options
+
+#### Events
+- `sse-merge-alpine-data`
+- `sse-execute-alpine-data`
+- `sse-remove-fragments`
+- `sse-execute-script`
+- `sse-merge-fragments`
+
+See `src/main.ts` for details on each event.
+
+## Development
+
+- Source: `src/`
+- Build entry: `builds/cdn.js`
+- Output: `dist/`
 
 ## License
 
