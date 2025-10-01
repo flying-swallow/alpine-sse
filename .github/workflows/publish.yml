@@ -1,100 +1,46 @@
-name: Publish to NPM
+name: Release
 
 on:
   push:
     branches:
       - main
-  release:
-    types: [published]
 
+permissions: {}
 jobs:
-  build-and-test:
+  release:
+    # prevents this action from running on forks
+    if: github.repository == 'flying-swallow/alpine-sse'
+    permissions:
+      contents: write # to create release (changesets/action)
+      id-token: write # OpenID Connect token needed for provenance
+      pull-requests: write # to create pull request (changesets/action)
+    name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Repo
         uses: actions/checkout@v4
-
+        with:
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 24.x
+          cache: pnpm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Build project
-        run: npm run build
+      - name: Build
+        run: pnpm build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
         with:
-          name: dist
-          path: dist/
-
-  publish:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to NPM
-        run: npm publish
+          version: pnpm changeset:version
+          publish: pnpm changeset:publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-prerelease:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Update version for prerelease
-        run: |
-          # Get current version and append pre-release identifier
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          COMMIT_SHA=${GITHUB_SHA::7}
-          NEW_VERSION="${CURRENT_VERSION}-alpha.${COMMIT_SHA}"
-          npm version $NEW_VERSION --no-git-tag-version
-          echo "Publishing version: $NEW_VERSION"
-
-      - name: Publish prerelease to NPM
-        run: npm publish --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
