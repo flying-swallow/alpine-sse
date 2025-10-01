@@ -8,6 +8,10 @@
     "type": "git",
     "url": "git+https://github.com/flying-swallow/alpine-sse.git"
   },
+  "packageManager": "pnpm@10.4.0",
+  "engines": {
+    "pnpm": ">=9.0.0"
+  },
   "main": "dist/alpine-sse.js",
   "devDependencies": {
     "@babel/core": "^7.18.10",
