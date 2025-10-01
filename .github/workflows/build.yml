@@ -1,15 +1,37 @@
-name: Build
+name: Build and Test
 
 on:
-  - pull_request
+  pull_request:
+  push:
+    branches-ignore:
+      - main  # Main branch is handled by publish workflow
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+    
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: ^16.0.0
-      - run: npm install
-      - run: npm run build
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Check build artifacts
+        run: |
+          ls -la dist/
+          # Verify that the main files exist
+          test -f dist/alpine-sse.js
+          test -f dist/alpine-sse.min.js
