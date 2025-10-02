@@ -1,12 +1,12 @@
 {
   "name": "alpine-sse",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Server-Sent Events (SSE) plugin for Alpine.js",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flying-swallow/alpine-sse.git"
+    "url": "https://github.com/flying-swallow/alpine-sse.git"
   },
   "packageManager": "pnpm@10.4.0",
   "engines": {
